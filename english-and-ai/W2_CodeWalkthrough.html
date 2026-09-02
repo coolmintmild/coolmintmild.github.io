@@ -1,0 +1,305 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 2 Code Walkthrough</title>
+<style>
+body { font-family: Arial, Helvetica, sans-serif; background:#f4f4f4; color:#222; margin:0; padding:24px; }
+.wrap { max-width: 1150px; margin: 0 auto; }
+h1 { font-size: 26px; }
+p.lead { color:#444; font-size:16px; line-height:1.5; }
+section { background:#fff; border:1px solid #ddd; border-radius:10px; padding:18px 20px; margin-bottom:28px; }
+h2 { font-size: 20px; margin: 0 0 12px 0; }
+.viz { display:flex; gap:18px; flex-wrap:wrap; }
+.codepane { flex: 1.3 1 560px; min-width:540px; }
+.statepane { flex: 1 1 420px; min-width:380px; }
+pre.code { background:#fdfdf6; border:1px solid #ccc; border-radius:6px; padding:12px 0; font-size:16px; line-height:1.9; margin:0; overflow-x:auto; }
+.cl { display:block; padding:0 12px 0 30px; position:relative; white-space:pre; font-family:Consolas,Menlo,monospace; }
+.cl.hl { background:#fff3b0; }
+.cl.hl::before { content:"\25B6"; color:#d33; position:absolute; left:8px; }
+.varbox { border:1px solid #ccc; border-radius:6px; background:#fafafa; padding:9px 12px; margin-bottom:12px; font-size:15.5px; }
+.varbox b.vn { color:#00589c; font-family:Consolas,Menlo,monospace; }
+.chip { display:inline-block; margin:2px; padding:4px 10px; border-radius:5px; border:1px solid #999; background:#fff; font-family:Consolas,Menlo,monospace; font-size:15px; position:relative;}
+.chip.cur { background:#ffe08a; border-color:#d59f00; font-weight:bold; }
+.chip.new { background:#c8f7c5; border-color:#2e9e3f; font-weight:bold; }
+.chip.dim { opacity:.45; }
+.note { min-height:44px; background:#eef6ff; border:1px solid #bcd6ee; border-radius:6px; padding:10px 14px; font-size:16px; margin-top:14px; }
+.controls { margin-top:10px; }
+button { padding:6px 18px; margin-right:6px; font-size:15px; cursor:pointer; }
+.stepct { color:#666; font-size:15px; margin-left:8px; }
+table.mat { border-collapse:collapse; font-size:14px; margin-top:4px; }
+table.mat td { border:1px solid #ccc; width:32px; height:26px; text-align:center; background:#fff; font-family:Consolas,Menlo,monospace;}
+table.mat td.lab { border:none; background:none; font-weight:bold; color:#555; font-family:Arial; padding:0 5px;}
+table.mat td.nz { background:#eef6ff; }
+table.mat td.flash { background:#c8f7c5; font-weight:bold; color:#1e7e34; }
+table.mat td.rowhl { background:#ffe08a; }
+table.vec { border-collapse:collapse; font-size:15px; }
+table.vec td { border:1px solid #ccc; width:44px; height:28px; text-align:center; background:#fff; font-family:Consolas,Menlo,monospace;}
+table.vec td.lab { border:none; background:none; font-weight:bold; color:#555; font-family:Arial; padding:0 6px;}
+table.vec td.hl { background:#ffe08a; font-weight:bold; }
+table.vec td.prod { background:#f2fff0; color:#1e7e34; font-weight:bold; }
+.sectionlabel { font-size:14px; color:#777; margin:4px 0 2px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>ENGS232 Week 2 &mdash; How the Code Works, Line by Line</h1>
+<p class="lead">Each section below shows one code cell from the lecture. The <b>&#9654; yellow line</b> is the line being executed right now. On the right, you see the variables as they exist at that moment. Press <b>Step</b> to execute the next line, <b>Back</b> to go back, or <b>Play</b> to watch it run.</p>
+
+<section id="sec1">
+<h2>1. The vocabulary loop</h2>
+<div class="viz">
+  <div class="codepane"><pre class="code" id="code1"></pre></div>
+  <div class="statepane" id="state1"></div>
+</div>
+<div class="note" id="note1"></div>
+<div class="controls">
+  <button id="b1-back">Back</button><button id="b1-step">Step</button><button id="b1-play">Play</button><button id="b1-reset">Reset</button>
+  <span class="stepct" id="ct1"></span>
+</div>
+</section>
+
+<section id="sec2">
+<h2>2. The counting loop</h2>
+<div class="viz">
+  <div class="codepane"><pre class="code" id="code2"></pre></div>
+  <div class="statepane" id="state2"></div>
+</div>
+<div class="note" id="note2"></div>
+<div class="controls">
+  <button id="b2-back">Back</button><button id="b2-step">Step</button><button id="b2-play">Play</button><button id="b2-reset">Reset</button>
+  <span class="stepct" id="ct2"></span>
+</div>
+</section>
+
+<section id="sec3">
+<h2>3. The cosine similarity</h2>
+<div class="viz">
+  <div class="codepane"><pre class="code" id="code3"></pre></div>
+  <div class="statepane" id="state3"></div>
+</div>
+<div class="note" id="note3"></div>
+<div class="controls">
+  <button id="b3-back">Back</button><button id="b3-step">Step</button><button id="b3-play">Play</button><button id="b3-reset">Reset</button>
+  <span class="stepct" id="ct3"></span>
+</div>
+</section>
+
+</div>
+<script>
+var WORDS = ['you','say','goodbye','and','i','say','hello','.'];
+var VOCAB = ['you','say','goodbye','and','i','hello','.'];
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function chip(t,cls){return '<span class="chip '+(cls||'')+'">'+esc(t)+'</span>';}
+function chips(arr,fn){return arr.map(function(x,i){return chip(String(x),fn?fn(x,i):'');}).join('')||'<span style="color:#aaa;font-size:13px">(empty list)</span>';}
+
+function renderCode(el, lines, hl){
+  el.innerHTML = lines.map(function(l,i){
+    return '<span class="cl'+(i===hl?' hl':'')+'">'+esc(l)+'</span>';
+  }).join('');
+}
+
+function engine(id, lines, trace, drawState){
+  var codeEl=document.getElementById('code'+id), stateEl=document.getElementById('state'+id),
+      noteEl=document.getElementById('note'+id), ctEl=document.getElementById('ct'+id);
+  var k=0, timer=null;
+  function render(){
+    var s=trace[k];
+    renderCode(codeEl, lines, s.line);
+    stateEl.innerHTML=drawState(s);
+    noteEl.innerHTML=s.note;
+    ctEl.textContent='step '+(k+1)+' / '+trace.length;
+  }
+  function stop(){if(timer){clearInterval(timer);timer=null;document.getElementById('b'+id+'-play').textContent='Play';}}
+  document.getElementById('b'+id+'-step').onclick=function(){stop(); if(k<trace.length-1){k++;render();}};
+  document.getElementById('b'+id+'-back').onclick=function(){stop(); if(k>0){k--;render();}};
+  document.getElementById('b'+id+'-reset').onclick=function(){stop(); k=0; render();};
+  document.getElementById('b'+id+'-play').onclick=function(){
+    if(timer){stop();return;}
+    this.textContent='Pause';
+    timer=setInterval(function(){ if(k<trace.length-1){k++;render();} else stop(); },1000);
+  };
+  render();
+}
+
+/* ---------- Section 1: vocabulary loop ---------- */
+var lines1=[
+"words = ['you', 'say', 'goodbye', 'and', 'i', 'say', 'hello', '.']",
+"vocab = []",
+"for w in words:",
+"    if w not in vocab:",
+"        vocab.append(w)"
+];
+function buildTrace1(){
+  var T=[], vocab=[];
+  T.push({line:0, idx:-1, w:null, vocab:[], note:"<b>words</b> is created: our sentence as a list of 8 words. (In the real cell, word_tokenize made this list.)"});
+  T.push({line:1, idx:-1, w:null, vocab:[], note:"<b>vocab</b> is created as an empty list. We will fill it."});
+  WORDS.forEach(function(w,i){
+    T.push({line:2, idx:i, w:w, vocab:vocab.slice(), note:"The <b>for</b> line takes the next word from words: <b>w</b> is now '"+w+"'."});
+    var inList = vocab.indexOf(w)!==-1;
+    if(inList){
+      T.push({line:3, idx:i, w:w, vocab:vocab.slice(),
+        note:"Is '"+w+"' <b>not in</b> vocab? '"+w+"' is already in vocab, so this is <b>False</b>. The append line is skipped, and we go back to the for line."});
+    } else {
+      T.push({line:3, idx:i, w:w, vocab:vocab.slice(),
+        note:"Is '"+w+"' <b>not in</b> vocab? It is not there yet, so this is <b>True</b>. We go inside the if."});
+      vocab.push(w);
+      T.push({line:4, idx:i, w:w, vocab:vocab.slice(), added:true,
+        note:"<b>vocab.append('"+w+"')</b> runs: '"+w+"' is added to the end of vocab."});
+    }
+  });
+  T.push({line:-1, idx:-1, w:null, vocab:vocab.slice(), done:true,
+    note:"words has no more items, so the loop ends. <b>vocab</b> now holds the 7 different words: the vocabulary list."});
+  return T;
+}
+function draw1(s){
+  var h='<div class="sectionlabel">words (the loop moves through this list)</div><div class="varbox">';
+  h+=chips(WORDS,function(w,i){ if(i===s.idx)return 'cur'; if(s.idx>=0&&i<s.idx)return 'dim'; if(s.done)return 'dim'; return '';});
+  h+='</div>';
+  h+='<div class="sectionlabel">current variable</div><div class="varbox"><b class="vn">w</b> = '+(s.w===null?'<span style="color:#999">(not set yet)</span>':"'"+esc(s.w)+"'")+'</div>';
+  h+='<div class="sectionlabel">vocab (being filled)</div><div class="varbox">';
+  h+=s.vocab.map(function(v,i){ return chip(v, (s.added&&i===s.vocab.length-1)?'new':''); }).join('')||'<span style="color:#aaa;font-size:13px">(empty list)</span>';
+  h+='</div>';
+  return h;
+}
+
+/* ---------- Section 2: counting loop ---------- */
+var lines2=[
+"window = 1",
+"C = np.zeros((len(vocab), len(vocab)), dtype=int)",
+"for a, b in nltk.skipgrams(words, 2, window - 1):",
+"    i, j = vocab.index(a), vocab.index(b)",
+"    C[i, j] += 1",
+"    C[j, i] += 1"
+];
+var PAIRS=[]; for(var p=0;p<WORDS.length-1;p++) PAIRS.push([WORDS[p],WORDS[p+1]]);
+function zeros(){var m=[];for(var i=0;i<7;i++){m.push([0,0,0,0,0,0,0]);}return m;}
+function copyM(m){return m.map(function(r){return r.slice();});}
+function buildTrace2(){
+  var T=[], C=zeros();
+  T.push({line:0, pk:-1, vars:{window:1}, C:copyM(C), note:"<b>window</b> is set to 1: we count only direct neighbors."});
+  T.push({line:1, pk:-1, vars:{window:1}, C:copyM(C), note:"<b>np.zeros</b> creates the table <b>C</b>, filled with zeros. The parentheses set the size: 7 by 7, the size of our vocabulary. This is the empty co-occurrence matrix."});
+  PAIRS.forEach(function(pr,k){
+    var a=pr[0], b=pr[1];
+    T.push({line:2, pk:k, vars:{window:1,a:a,b:b}, C:copyM(C),
+      note:"<b>nltk.skipgrams</b> hands us the next pair of neighbors: <b>a</b> = '"+a+"', <b>b</b> = '"+b+"'."});
+    var i=VOCAB.indexOf(a), j=VOCAB.indexOf(b);
+    T.push({line:3, pk:k, vars:{window:1,a:a,b:b,i:i,j:j}, C:copyM(C),
+      note:"<b>vocab.index</b> finds each word's position in the vocabulary: <b>i</b> = "+i+" ('"+a+"'), <b>j</b> = "+j+" ('"+b+"')."});
+    C[i][j]+=1;
+    T.push({line:4, pk:k, vars:{window:1,a:a,b:b,i:i,j:j}, C:copyM(C), cell:[i,j],
+      note:"<b>C[i, j] += 1</b>: the cell in row '"+a+"', column '"+b+"' goes up by 1."});
+    C[j][i]+=1;
+    T.push({line:5, pk:k, vars:{window:1,a:a,b:b,i:i,j:j}, C:copyM(C), cell:[j,i],
+      note:"<b>C[j, i] += 1</b>: the mirror cell, row '"+b+"', column '"+a+"', also goes up by 1, because being neighbors goes both ways. Then back to the for line."});
+  });
+  T.push({line:-1, pk:-1, vars:{window:1}, C:copyM(C), done:true,
+    note:"No more pairs, so the loop ends. <b>C</b> is the finished co-occurrence matrix, the same table we built by hand."});
+  return T;
+}
+function matHTML(C, cell, rowhl){
+  var h='<table class="mat"><tr><td class="lab"></td>';
+  VOCAB.forEach(function(v){h+='<td class="lab">'+esc(v)+'</td>';});
+  h+='</tr>';
+  for(var i=0;i<7;i++){
+    h+='<tr><td class="lab">'+esc(VOCAB[i])+'</td>';
+    for(var j=0;j<7;j++){
+      var cls='';
+      if(cell&&cell[0]===i&&cell[1]===j) cls='flash';
+      else if(rowhl===i) cls='rowhl';
+      else if(C[i][j]>0) cls='nz';
+      h+='<td class="'+cls+'">'+C[i][j]+'</td>';
+    }
+    h+='</tr>';
+  }
+  h+='</table>';
+  return h;
+}
+function draw2(s){
+  var h='<div class="sectionlabel">pairs produced by nltk.skipgrams</div>'
+   +'<div class="varbox" style="font-size:14.5px;color:#444;background:#fffdf2">'
+   +'nltk.skipgrams walked through the words list and pulled out every pair of words that stand together within the window. '
+   +'window is 1, so that means each word paired with its direct neighbor: our 8 words give exactly 7 pairs, in sentence order. '
+   +'(you, say) comes from the first two words, (say, goodbye) from the next two, and so on to the end.</div>'
+   +'<div class="varbox">';
+  h+=PAIRS.map(function(pr,k){
+    var cls=''; if(k===s.pk)cls='cur'; else if(s.pk>=0&&k<s.pk)cls='dim'; else if(s.done)cls='dim';
+    return chip('('+pr[0]+', '+pr[1]+')',cls);
+  }).join('');
+  h+='</div>';
+  h+='<div class="sectionlabel">current variables</div><div class="varbox">';
+  var vs=s.vars, parts=[];
+  ['window','a','b','i','j'].forEach(function(n){
+    if(vs[n]!==undefined) parts.push('<b class="vn">'+n+'</b> = '+(typeof vs[n]==='string'?"'"+esc(vs[n])+"'":vs[n]));
+  });
+  h+=parts.join(' &nbsp;&nbsp; ')+'</div>';
+  h+='<div class="sectionlabel">C (the co-occurrence matrix)</div><div class="varbox">'+matHTML(s.C, s.cell)+'</div>';
+  return h;
+}
+
+/* ---------- Section 3: cosine ---------- */
+var lines3=[
+"v1 = C[vocab.index('you')]",
+"v2 = C[vocab.index('i')]",
+"1 - cosine(v1, v2)"
+];
+var V1=[0,1,0,0,0,0,0], V2=[0,1,0,1,0,0,0];
+function buildTrace3(){
+  var Cf=zeros();
+  PAIRS.forEach(function(pr){var i=VOCAB.indexOf(pr[0]),j=VOCAB.indexOf(pr[1]);Cf[i][j]+=1;Cf[j][i]+=1;});
+  var T=[];
+  T.push({line:0, C:Cf, rowhl:0, v1:true,
+    note:"<b>vocab.index('you')</b> finds the position of 'you' in the vocabulary: 0. So <b>C[0]</b> takes row 0 out of the matrix. That row becomes <b>v1</b>, the vector of you."});
+  T.push({line:1, C:Cf, rowhl:4, v1:true, v2:true,
+    note:"In the same way, <b>vocab.index('i')</b> gives 4, and row 4 becomes <b>v2</b>, the vector of i."});
+  for(var k=0;k<7;k++){
+    T.push({line:2, v1:true, v2:true, ph:k,
+      note:"Inside <b>cosine</b>: position "+(k+1)+" ("+esc(VOCAB[k])+"): "+V1[k]+" &times; "+V2[k]+" = <b>"+(V1[k]*V2[k])+"</b>"});
+  }
+  T.push({line:2, v1:true, v2:true, ph:7, note:"Add all the products: 0+1+0+0+0+0+0 = <b>1</b>"});
+  T.push({line:2, v1:true, v2:true, ph:8, note:"Size of v1: &radic;(0+1+0+0+0+0+0) = &radic;1 = <b>1</b>"});
+  T.push({line:2, v1:true, v2:true, ph:9, note:"Size of v2: &radic;(0+1+0+1+0+0+0) = &radic;2 &asymp; <b>1.414</b>"});
+  T.push({line:2, v1:true, v2:true, ph:10, note:"cosine gives the distance; <b>1 minus</b> it gives the similarity: 1 &divide; (1 &times; 1.414) = <b style='color:#1e7e34;font-size:15px'>0.7071</b>. This is cosine similarity(you, i)."});
+  return T;
+}
+function vecRow(label,v,hl,cls){
+  var h='<tr><td class="lab">'+label+'</td>';
+  v.forEach(function(x,i){h+='<td class="'+((i===hl)?'hl':(cls||''))+'">'+(x===''?'':x)+'</td>';});
+  h+='</tr>';
+  return h;
+}
+function draw3(s){
+  var h='';
+  if(s.C){
+    h+='<div class="sectionlabel">C (rows are word vectors)</div><div class="varbox">'+matHTML(s.C, null, s.rowhl)+'</div>';
+  }
+  if(s.v1){
+    h+='<div class="sectionlabel">the two vectors</div><div class="varbox"><table class="vec">';
+    h+='<tr><td class="lab"></td>'+VOCAB.map(function(v,i){return '<td class="lab"'+(s.ph===i?' style="color:#d59f00"':'')+'>'+esc(v)+'</td>';}).join('')+'</tr>';
+    h+=vecRow('v1 (you)',V1,(s.ph<7)?s.ph:undefined);
+    if(s.v2) h+=vecRow('v2 (i)',V2,(s.ph<7)?s.ph:undefined);
+    if(s.ph!==undefined){
+      var prods=[]; for(var i=0;i<7;i++) prods.push(i<=Math.min(s.ph,6)?V1[i]*V2[i]:'');
+      h+=vecRow('product',prods,undefined,'prod');
+    }
+    h+='</table></div>';
+    if(s.ph!==undefined&&s.ph>=7){
+      var box=[];
+      box.push('sum of products = <b>1</b>');
+      if(s.ph>=8) box.push('size of v1 = <b>1</b>');
+      if(s.ph>=9) box.push('size of v2 &asymp; <b>1.414</b>');
+      if(s.ph>=10) box.push('similarity = 1 &divide; (1 &times; 1.414) = <b style="color:#1e7e34">0.7071</b>');
+      h+='<div class="sectionlabel">calculation</div><div class="varbox">'+box.join('<br>')+'</div>';
+    }
+  }
+  return h;
+}
+
+engine(1, lines1, buildTrace1(), draw1);
+engine(2, lines2, buildTrace2(), draw2);
+engine(3, lines3, buildTrace3(), draw3);
+</script>
+</body>
+</html>
